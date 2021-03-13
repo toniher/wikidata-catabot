@@ -112,18 +112,21 @@ while (!$listFile->eof()) {
 		continue;
 	}
 
-	echo $line."\n";
+	if ( ! empty( $line ) ) {
 
-	// Do we resolve WikiData from Wikipedia?
-	if ( $resolve ) {
-		$wdid = retrieveWikidataId( $line, $wikiconfig, $wikidataconfig );
-	}
+		echo $line."\n";
 
-	if ( $wdid ) {
-		// $wdid = "Q13406268"; // Dummy, for testing purposes. Must be changed
-		// Add statement and ref
-		echo $wdid."\n"; // Only considers id -> ACTION done via configuration
-		sleep( 5 ); // Delay 5 seconds
+		// Do we resolve WikiData from Wikipedia?
+		if ( $resolve ) {
+			$wdid = retrieveWikidataId( $line, $wikiconfig, $wikidataconfig );
+		}
+
+		if ( $wdid ) {
+			// $wdid = "Q13406268"; // Dummy, for testing purposes. Must be changed
+			// Add statement and ref
+			echo $wdid."\n"; // Only considers id -> ACTION done via configuration
+			sleep( 5 ); // Delay 5 seconds
+		}
 	}
 
 }
