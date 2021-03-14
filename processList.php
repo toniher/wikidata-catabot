@@ -199,12 +199,12 @@ while (!$listFile->eof()) {
 
 			$table[$wdid] = $row;
 
-			sleep( 1 ); // Delay 2 seconds
+			sleep( 0.5 ); // Delay 0.5 seconds
 		}
 	}
 }
 
-var_dump( $table );
+#var_dump( $table );
 
 # Process data here
 foreach ( $props["langs_main"] as $lang ) {
@@ -241,8 +241,33 @@ foreach ( $props["langs_main"] as $lang ) {
 	}
 }
 
-var_dump( $wp_main );
+#var_dump( $wp_main );
 
+# Print table
+foreach ( $table as $wdid => $row ) {
+
+	$extra = [];
+
+	foreach ( $props["langs_main"] as $lang ) {
+
+		foreach( $props["processes"] as $process ) {
+
+			if ( array_key_exists( $wdid, $article_main[$lang]) ) {
+				$page = $article_main[$lang][$wdid];
+				if ( array_key_exists( $page, $wp_main[$lang][$process] ) ) {
+					$extra = $wp_main[$lang][$process][$page];
+				}
+			} else {
+				$extra = getProcessWp( $wpapi[$lang], $process, null );
+			}
+
+		}
+
+		echo implode( "\t", array_merge( $row, $extra ) )."\n";
+
+	}
+
+}
 
 # Logout from wikis
 foreach ( $props["langs_main"] as $lang ) {

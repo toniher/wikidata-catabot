@@ -108,6 +108,14 @@ function processFullPageCount( $wpapi, $pages ){
   			}
   		}
     }
+  } else {
+
+    $i = 0;
+    while ( $i < 2 ) {
+      array_push( $data, "" );
+      $i++;
+    }
+
   }
 
   return $data;
