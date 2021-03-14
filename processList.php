@@ -105,6 +105,16 @@ foreach ( $props["langs_main"] as $lang ) {
 
 $listFile = new SplFileObject($list);
 
+$table = [];
+$article_main = [];
+$wp_main = [];
+
+foreach ( $props["langs_main"] as $lang ) {
+
+	$article_main[$lang] = [];
+	$wp_main[$lang] = [];
+}
+
 while (!$listFile->eof()) {
 
 	$line = trim( $listFile->fgets() );
@@ -140,12 +150,8 @@ while (!$listFile->eof()) {
 			# $enLabel = $termLookup->getLabel( $itemId, 'en' );
 			#enDesc = $termLookup->getDescription( $itemId, 'en' );
 			$row = [];
-			$row_wiki = [];
-
-			$article_main = [];
 
 			array_push( $row, $wdid );
-			# array_push( $row_wiki, formatWiki( $wdid, "d" ) );
 
 			foreach ( $props["langs_main"] as $lang ) {
 
@@ -166,7 +172,7 @@ while (!$listFile->eof()) {
 					$badges = $sitelinks->getBySiteId($langwiki)->getBadges();
 					array_push( $row, $pagename );
 					array_push( $row, implode( ", ", $badges ) );
-					$article_main[$lang] = $pagename;
+					$article_main[$lang][$wdid] = $pagename;
 
 				} else {
 					array_push( $row, "" );
@@ -191,41 +197,52 @@ while (!$listFile->eof()) {
 
 			}
 
-			# Process data here
-			foreach ( $props["langs_main"] as $lang ) {
+			$table[$wdid] = $row;
 
-				if ( array_key_exists( $lang, $article_main ) ) {
+			sleep( 1 ); // Delay 2 seconds
+		}
+	}
+}
 
-					foreach( $props["processes"] as $prop ) {
+var_dump( $table );
 
-						$outcome = getProcessWp( $wpapi[$lang], $prop, $article_main[$lang] );
-						if ( is_array( $outcome ) ) {
-							foreach( $outcome as $out ) {
-								array_push( $row, $out );
-							}
-						}
+# Process data here
+foreach ( $props["langs_main"] as $lang ) {
 
-					}
+	if ( array_key_exists( $lang, $article_main ) ) {
 
-				} else {
-					foreach( $props["processes"] as $prop ) {
-						$outcome = getProcessWp( $wpapi[$lang], $prop, null );
-						if ( is_array( $outcome ) ) {
-							foreach( $outcome as $out ) {
-								array_push( $row, $out );
-							}
-						}
-					}
+		$pages = array_values( $article_main[$lang] );
+
+		foreach( $props["processes"] as $process ) {
+
+			$store = [];
+			$i = 0;
+			foreach ( $pages as $page ) {
+
+				array_push( $store, $page );
+
+				$i++;
+				if ( $i > 25 ) {
+					$outcome = getProcessWp( $wpapi[$lang], $process, $store );
+					sleep( 1 );
+					$wp_main = addToWpProcess( $wp_main, $lang, $process, $outcome );
+					// var_dump( $outcome );
+					$store = [];
+					$i = 0;
 				}
 			}
 
-			echo implode( "\t", $row )."\n";
-
-			sleep( 5 ); // Delay 5 seconds
+			if ( count( $store ) > 0 ) {
+				$outcome = getProcessWp( $wpapi[$lang], $process, $store );
+				$wp_main = addToWpProcess( $wp_main, $lang, $process, $outcome );
+				// var_dump( $outcome );
+			}
 		}
 	}
-
 }
+
+var_dump( $wp_main );
+
 
 # Logout from wikis
 foreach ( $props["langs_main"] as $lang ) {
@@ -233,3 +250,14 @@ foreach ( $props["langs_main"] as $lang ) {
 }
 
 $api->logout();
+
+function addToWpProcess( $container, $lang, $process, $outcome ) {
+	if ( ! array_key_exists( $process, $container[$lang] ) ) {
+		$container[$lang][$process] = [];
+	}
+	foreach ( $outcome as $key => $value ) {
+		$container[$lang][$process][$key] = $value;
+	}
+
+	return $container;
+}

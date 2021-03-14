@@ -22,13 +22,13 @@ function initializeFactory( $container, $api, $lang ) {
   return $container;
 }
 
-function getProcessWp( $wpapi, $process, $pagename ) {
+function getProcessWp( $wpapi, $process, $pages ) {
 
   $outcome = [];
 
   switch( $process ){
     case "fullpagecount":
-      $outcome = processFullPageCount( $wpapi, $pagename );
+      $outcome = processFullPageCount( $wpapi, $pages );
       break;
     default:
       $outcome = [];
@@ -38,14 +38,14 @@ function getProcessWp( $wpapi, $process, $pagename ) {
 
 }
 
-function processFullPageCount( $wpapi, $pagename ){
+function processFullPageCount( $wpapi, $pages ){
 
   $data = [];
 
-  if ( $pagename ) {
+  if ( $pages ) {
 
     $params = [];
-    $params["titles"] = $pagename;
+    $params["titles"] = implode( "|", $pages );
   	$params["prop"] = "revisions";
   	$params["rvslots"] = "*";
   	$params["rvprop"] = "size|timestamp";
@@ -58,8 +58,6 @@ function processFullPageCount( $wpapi, $pagename ){
     $timestamp = "";
     if ( $outcome ) {
 
-      # var_dump( $outcome );
-
   		if ( array_key_exists( "query", $outcome ) ) {
 
   			if ( array_key_exists( "pages", $outcome["query"] ) ) {
@@ -67,34 +65,22 @@ function processFullPageCount( $wpapi, $pagename ){
   				$pagesQuery = $outcome["query"]["pages"];
 
   				if ( count( $pagesQuery ) > 0 ) {
-  					$pageQuery = $pagesQuery[0];
 
-  					if ( array_key_exists( "revisions", $pageQuery ) ) {
+            foreach( $pagesQuery as $pageQuery ) {
 
-  						$revisions = $pageQuery["revisions"];
+              $title = null;
+              if ( array_key_exists( "title", $pageQuery ) ) {
+                $title = $pageQuery["title"];
+              }
 
-  						if ( count( $revisions ) > 0 ) {
 
-  							$revision = $revisions[0];
+    					if ( array_key_exists( "revisions", $pageQuery ) ) {
 
-  							if ( array_key_exists( "slots", $revision ) ) {
+    						$revisions = $pageQuery["revisions"];
 
-  								if ( array_key_exists( "main", $revision["slots"] ) ) {
+    						if ( count( $revisions ) > 0 ) {
 
-  									if ( array_key_exists( "size", $revision["slots"]["main"] ) ) {
-
-  										$size = $revision["slots"]["main"]["size"];
-
-  									}
-                    if ( array_key_exists( "timestamp", $revision["slots"]["main"] ) ) {
-
-  										$timestamp = $revision["slots"]["main"]["timestamp"];
-
-  									}
-
-  								}
-
-  							} else {
+    							$revision = $revisions[0];
 
                   if ( array_key_exists( "size", $revision ) ) {
 
@@ -107,21 +93,20 @@ function processFullPageCount( $wpapi, $pagename ){
 
                   }
 
-                }
-  						}
-  					}
-  				}
+                  if ( $title ) {
 
+                    $data[$title] = [ $size, $timestamp ];
+                    $size = "";
+                    $timestamp = "";
+
+                  }
+
+    						}
+    					}
+    				}
+          }
   			}
   		}
-    }
-    return( [$size, $timestamp] );
-
-  } else {
-    $i = 0;
-    while ( $i < 2 ) {
-      array_push( $data, "" );
-      $i++;
     }
   }
 
