@@ -155,16 +155,19 @@ while (!$listFile->eof()) {
 
 			foreach ( $props["langs_main"] as $lang ) {
 
+				$label = "";
+				$desc = "";
+
 				if ( array_key_exists( $lang, $labels ) ) {
-					array_push( $row, $labels[$lang] );
-				} else {
-					array_push( $row, "" );
+					$label = $labels[$lang];
 				}
+
+				array_push( $row, $label );
+
 				if ( array_key_exists( $lang, $descriptions ) ) {
-					array_push( $row, $descriptions[$lang] );
-				} else {
-					array_push( $row, "" );
+					$desc = $descriptions[$lang];
 				}
+				array_push( $row, $desc );
 
 				$langwiki = $lang."wiki";
 				if ( $sitelinks->hasLinkWithSiteId( $langwiki ) ) {
