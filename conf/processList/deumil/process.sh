@@ -4,7 +4,7 @@ EXECPATH="/home/toniher/remote-work/mediawiki/wikidata-catabot"
 INPATH="/home/toniher/Nextcloud/Documents/wikidata/deumil"
 OUTPATH="/home/toniher/Nextcloud/Documents/wikidata/deumil/csv"
 CONFFILE="/home/toniher/remote-work/mediawiki/10000.count.conf"
-PATHWIKI="Viquiprojecte:Concursos/Els 10.000/Llista"
+PATHWIKI="Viquiprojecte:Concursos/Els_10.000/Llista"
 
 cd $EXECPATH
 
