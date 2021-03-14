@@ -77,9 +77,9 @@ if ( ! $taskname ) {
 }
 
 $api = new MwApi\MediawikiApi( $wikidataconfig['url'] );
-
 $api->login( new MwApi\ApiUser( $wikidataconfig['user'], $wikidataconfig['password'] ) );
 
+# $wpapi = {};
 
 $dataValueClasses = array(
     'unknown' => 'DataValues\UnknownValue',
@@ -114,21 +114,107 @@ while (!$listFile->eof()) {
 
 	if ( ! empty( $line ) ) {
 
-		echo $line."\n";
-
 		// Do we resolve WikiData from Wikipedia?
 		if ( $resolve ) {
 			$wdid = retrieveWikidataId( $line, $wikiconfig, $wikidataconfig );
 		}
 
 		if ( $wdid ) {
-			// $wdid = "Q13406268"; // Dummy, for testing purposes. Must be changed
-			// Add statement and ref
-			echo $wdid."\n"; // Only considers id -> ACTION done via configuration
+
+			# echo "ENTRY: ".$wdid."\n"; // Only considers id -> ACTION done via configuration
+
+			$itemLookup = $wbFactory->newItemLookup();
+			$termLookup = $wbFactory->newTermLookup();
+
+			$itemId = new WbDM\Entity\ItemId( $wdid );
+			$item = $itemLookup->getItemForId( $itemId );
+			$labels = $item->getLabels();
+			$descriptions = $item->getDescriptions();
+			$sitelinks = $item->getSiteLinkList();
+
+			# $enLabel = $termLookup->getLabel( $itemId, 'en' );
+			#enDesc = $termLookup->getDescription( $itemId, 'en' );
+			$row = [];
+			$row_wiki = [];
+
+			$article_main = [];
+
+			array_push( $row, $wdid );
+			# array_push( $row_wiki, formatWiki( $wdid, "d" ) );
+
+			foreach ( $props["langs_main"] as $lang ) {
+
+				if ( array_key_exists( $lang, $labels ) ) {
+					array_push( $row, $labels[$lang] );
+				} else {
+					array_push( $row, "" );
+				}
+				if ( array_key_exists( $lang, $descriptions ) ) {
+					array_push( $row, $descriptions[$lang] );
+				} else {
+					array_push( $row, "" );
+				}
+
+				$langwiki = $lang."wiki";
+				if ( $sitelinks->hasLinkWithSiteId( $langwiki ) ) {
+					$pagename = $sitelinks->getBySiteId($langwiki)->getPageName();
+					$badges = $sitelinks->getBySiteId($langwiki)->getBadges();
+					array_push( $row, $pagename );
+					array_push( $row, implode( ", ", $badges ) );
+					$article_main[$lang] = $pagename;
+
+				} else {
+					array_push( $row, "" );
+					array_push( $row, "" );
+				}
+
+
+			}
+
+			foreach ( $props["langs_article"] as $lang ) {
+
+				$langwiki = $lang."wiki";
+				if ( $sitelinks->hasLinkWithSiteId( $langwiki ) ) {
+					$pagename = $sitelinks->getBySiteId($langwiki)->getPageName();
+					$badges = $sitelinks->getBySiteId($langwiki)->getBadges();
+					array_push( $row, $pagename );
+					array_push( $row, implode( ", ", $badges ) );
+				} else {
+					array_push( $row, "" );
+					array_push( $row, "" );
+				}
+
+			}
+
+			# Process data here
+			foreach ( $props["langs_main"] as $lang ) {
+
+				if ( array_key_exists( $lang, $article_main ) ) {
+
+					foreach( $props["processes"] as $prop ) {
+
+						array_push( $row, getProcessWp( $wpapi[$lang], $prop, $article_main ) );
+
+					}
+
+				} else {
+					foreach( $props["processes"] as $prop ) {
+						array_push( $row, "" );
+					}
+				}
+			}
+
+			echo implode( "\t", $row )."\n";
+
 			sleep( 5 ); // Delay 5 seconds
 		}
 	}
 
+}
+
+# Logout from wikis
+foreach ( $props["langs_main"] as $lang ) {
+	$wpapi[$lang]->logout();
 }
 
 $api->logout();
