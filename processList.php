@@ -3,13 +3,12 @@
 require_once( __DIR__ . '/vendor/autoload.php' );
 require_once( __DIR__ . '/lib/resolve.php' );
 require_once( __DIR__ . '/lib/action.php' );
+require_once( __DIR__ . '/lib/wpprocess.php' );
 
 use \Mediawiki\Api as MwApi;
 use \Wikibase\Api as WbApi;
 use \Mediawiki\DataModel as MwDM;
 use \Wikibase\DataModel as WbDM;
-
-use League\Csv\Reader;
 
 // Detect commandline args
 $conffile = 'config.json';
@@ -193,13 +192,23 @@ while (!$listFile->eof()) {
 
 					foreach( $props["processes"] as $prop ) {
 
-						array_push( $row, getProcessWp( $wpapi[$lang], $prop, $article_main ) );
+						$outcome = getProcessWp( $wpapi[$lang], $prop, $article_main );
+						if ( is_array( $outcome ) ) {
+							foreach( $outcome as $out ) {
+								array_push( $row, $out );
+							}
+						}
 
 					}
 
 				} else {
 					foreach( $props["processes"] as $prop ) {
-						array_push( $row, "" );
+						$outcome = getProcessWp( $wpapi[$lang], $prop, null );
+						if ( is_array( $outcome ) ) {
+							foreach( $outcome as $out ) {
+								array_push( $row, $out );
+							}
+						}
 					}
 				}
 			}
