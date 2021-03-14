@@ -104,6 +104,12 @@ foreach ( $results as $row ) {
 		#if ( array_key_exists( "types", $props ) && $rowi > 0 ) {
 		#	$row = processRow( $row, $props["types"] );
 		#}
+		switch( $taskname ) {
+			case 'importa10000' :
+				$row = processImporta10000( $row );
+			default:
+				$row = $row;
+		}
 
 		$string.= $si.implode( $ss, $row )."\n";
 	}
@@ -115,37 +121,11 @@ $string.="|}\n";
 if ( $string ) {
 
 	echo $string, "\n";
-	// putPage( $wpapi, $string, $finalpage );
+	putPage( $wpapi, $string, $finalpage );
 
 }
 
 $wpapi->logout();
-
-function processRow( $row, $types ) {
-
-	$newRow = [];
-
-	$c = 0;
-
-	foreach ( $row as $el ) {
-
-		if ( array_key_exists( $c, $types ) ) {
-			if ( $types[$c] == "int" ) {
-
-				if ( $el !== "" ) {
-					$el = intval( $el );
-				}
-			}
-		}
-
-		$c++;
-
-		array_push( $newRow, $el );
-	}
-
-	return $newRow;
-}
-
 
 
 function putPage( $wpapi, $contentTxt, $page ) {
@@ -168,4 +148,69 @@ function putPage( $wpapi, $contentTxt, $page ) {
 		}
 	}
 
+}
+
+/** TODO to be moved for cleanliness **/
+function processImporta10000( $row ) {
+	$newRow = [];
+
+	$wd = formatWiki( $row[0], "d" );
+	$lang = $row[1];
+	$desc = $row[2];
+	$article = formatWiki( $row[3] ) ;
+	$badge = detectBadge( $row[4] );
+
+	$article_en = formatWiki( $row[5], "en", "en" ) ;
+	$badge_en = detectBadge( $row[6] );
+	$part_en = trim($article_en.$badge_en);
+
+	$article_es = formatWiki( $row[7], "es", "es" ) ;
+	$badge_es = detectBadge( $row[8] );
+	$part_es = trim($article_es.$badge_es);
+
+	$article_fr = formatWiki( $row[9], "fr", "fr" ) ;
+	$badge_fr = detectBadge( $row[10] );
+	$part_fr = trim($article_fr.$badge_fr);
+
+	$interwiki = trim( implode( " ", [ $part_en, $part_es, $part_fr] ) );
+
+	$size = $row[11];
+	$timestamp = $row[12];
+
+	$newRow = [ $wd, $lang, $desc, $article.$badge, $interwiki, $size, $timestamp ];
+	return $newRow;
+
+}
+
+function formatWiki( $val, $prefix=null, $text=null ) {
+
+	if ( $val ) {
+		$link = $val;
+		$show = $val;
+
+		if ( $prefix ) {
+			$link = ":".$prefix.":".$val;
+		}
+
+		if ( $text ) {
+			$show = $text;
+		}
+
+		if ( $show == $val && ! $prefix ) {
+			return "[[".$show."]]";
+		} else {
+			return "[[$link|$show]]";
+		}
+	} else {
+		return "";
+	}
+
+}
+
+function detectBadge( $val ) {
+	if ( ! empty( $val ) ) {
+		return " (Q)";
+	} else {
+		return "";
+	}
 }
