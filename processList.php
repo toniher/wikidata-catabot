@@ -78,8 +78,6 @@ if ( ! $taskname ) {
 $api = new MwApi\MediawikiApi( $wikidataconfig['url'] );
 $api->login( new MwApi\ApiUser( $wikidataconfig['user'], $wikidataconfig['password'] ) );
 
-# $wpapi = {};
-
 $dataValueClasses = array(
     'unknown' => 'DataValues\UnknownValue',
     'string' => 'DataValues\StringValue',
@@ -96,6 +94,14 @@ $wbFactory = new WbApi\WikibaseFactory(
     new DataValues\Serializers\DataValueSerializer()
 );
 
+$wpapi = [];
+// $wpFactory = [];
+
+foreach ( $props["langs_main"] as $lang ) {
+	$wpapi = initializeLogin( $wpapi, $lang, $wikidataconfig['user'], $wikidataconfig['password'] );
+	// $wpFactory = initializeFactory( $wpFactory, $wpapi, $lang );
+
+}
 
 $listFile = new SplFileObject($list);
 
@@ -192,7 +198,7 @@ while (!$listFile->eof()) {
 
 					foreach( $props["processes"] as $prop ) {
 
-						$outcome = getProcessWp( $wpapi[$lang], $prop, $article_main );
+						$outcome = getProcessWp( $wpapi[$lang], $prop, $article_main[$lang] );
 						if ( is_array( $outcome ) ) {
 							foreach( $outcome as $out ) {
 								array_push( $row, $out );
