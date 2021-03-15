@@ -35,7 +35,7 @@ do
   echo $outfile
   pagename=${mapfiles[${name/.txt/}]}
   php tableExportFromCSV.php $CONFFILE $OUTPATH/$outfile importa10000 "$PATHWIKI/$pagename"
-  export $pagename
+  export pagename
   perl -F"\t" -lane 'if ( $F[3] ) { print "$F[3]\t$F[12]\t$F[13]\t${ENV{\"DATE\"}}\t${ENV{\"pagename\"}}" }' $OUTPATH/$outfile.tmp
   sleep 10
 done
