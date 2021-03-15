@@ -35,9 +35,11 @@ do
   php processList.php $CONFFILE $file 10000 > "$OUTPATH/$outfile"
   echo $outfile
   pagename=${mapfiles[${name/.txt/}]}
-  php tableExportFromCSV.php $CONFFILE $OUTPATH/$outfile importa10000 "$PATHWIKI/$pagename"
-  export pagename
-  perl -F"\t" -lane 'if ( $F[3] ) { print "$F[3]\t$F[11]\t$F[12]\t${ENV{\"DATE\"}}\t${ENV{\"pagename\"}}" }' "$OUTPATH/$outfile" > "$OUTPATH/$outfile.tmp"
+  if [ -s "$OUTPATH/$outfile" ]; then 
+	php tableExportFromCSV.php $CONFFILE $OUTPATH/$outfile importa10000 "$PATHWIKI/$pagename"
+  	export pagename
+  	perl -F"\t" -lane 'if ( $F[3] ) { print "$F[3]\t$F[11]\t$F[12]\t${ENV{\"DATE\"}}\t${ENV{\"pagename\"}}" }' "$OUTPATH/$outfile" > "$OUTPATH/$outfile.tmp"
+  fi
   sleep 10
 done
 
