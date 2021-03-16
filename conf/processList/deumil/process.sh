@@ -45,7 +45,7 @@ done
 
 # Process SQLite
 TEMPDIR="/tmp"
-cat "$OUTPATH/*.tmp" > "$TEMPDIR/all.tmp"
+cat "$OUTPATH"/*.tmp > "$TEMPDIR/all.tmp"
 cd "$EXECPATH/conf/processList/deumil"
 php updateSQLite.php "$TEMPDIR/all.tmp" "$DBFILE" > /tmp/update10000SQL.log 2> /tmp/update10000SQL.err
-cp "$DBFILE" "$OUTPATH/"
+cp "$DBFILE" "$OUTPATH"
