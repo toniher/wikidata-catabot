@@ -209,7 +209,7 @@ function formatWiki( $val, $prefix=null, $text=null ) {
 
 function detectBadge( $val ) {
 	if ( ! empty( $val ) ) {
-		return " (Q)";
+		return " 🏅";
 	} else {
 		return "";
 	}
