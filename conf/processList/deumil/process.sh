@@ -8,6 +8,7 @@ OUTPATH="/home/toniher/Nextcloud/Documents/wikidata/deumil/csv/$DATE"
 CONFFILE="/home/toniher/remote-work/mediawiki/10000.count.conf"
 PATHWIKI="Viquiprojecte:Concursos/Els_10.000/Llista"
 DBFILE="/home/toniher/Nextcloud/Documents/wikidata/deumil/db/update.db"
+CONTESTDIR="/home/toniher/remote-work/mediawiki/user-contribs-classifier"
 
 cd $EXECPATH
 mkdir -p "${OUTPATH}"
@@ -35,7 +36,7 @@ do
   php processList.php $CONFFILE $file 10000 > "$OUTPATH/$outfile"
   echo $outfile
   pagename=${mapfiles[${name/.txt/}]}
-  if [ -s "$OUTPATH/$outfile" ]; then 
+  if [ -s "$OUTPATH/$outfile" ]; then
 	php tableExportFromCSV.php $CONFFILE $OUTPATH/$outfile importa10000 "$PATHWIKI/$pagename"
   	export pagename
   	perl -F"\t" -lane 'if ( $F[3] ) { print "$F[3]\t$F[11]\t$F[12]\t${ENV{\"DATE\"}}\t${ENV{\"pagename\"}}" }' "$OUTPATH/$outfile" > "$OUTPATH/$outfile.tmp"
@@ -49,3 +50,6 @@ cat "$OUTPATH"/*.tmp > "$TEMPDIR/all.tmp"
 cd "$EXECPATH/conf/processList/deumil"
 php updateSQLite.php "$TEMPDIR/all.tmp" "$DBFILE" > /tmp/update10000SQL.log 2> /tmp/update10000SQL.err
 cp "$DBFILE" "$OUTPATH"
+
+cd $CONTESTDIR
+php subset-count.php $CONFFILE deumil &> /tmp/deumil.count.log
