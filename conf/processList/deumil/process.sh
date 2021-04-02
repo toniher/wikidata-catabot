@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 export DATE=$(date +%Y-%m-%dT%H:%M:%S)
+export SUBCONF=$(date +%Y%m)
 
 EXECPATH="/home/toniher/remote-work/mediawiki/wikidata-catabot"
 INPATH="/home/toniher/Nextcloud/Documents/wikidata/deumil"
@@ -9,6 +10,7 @@ CONFFILE="/home/toniher/remote-work/mediawiki/10000.count.conf"
 PATHWIKI="Viquiprojecte:Concursos/Els_10.000/Llista"
 DBFILE="/home/toniher/Nextcloud/Documents/wikidata/deumil/db/update.db"
 CONTESTDIR="/home/toniher/remote-work/mediawiki/user-contribs-classifier"
+CONFFILEMONTH="/home/toniher/remote-work/mediawiki/10000.count.${SUBCONF}.conf"
 
 cd $EXECPATH
 mkdir -p "${OUTPATH}"
@@ -53,3 +55,4 @@ cp "$DBFILE" "$OUTPATH"
 
 cd $CONTESTDIR
 php subset-count.php $CONFFILE deumil &> /tmp/deumil.count.log
+php subset-count.php $CONFFILEMONTH deumil &> /tmp/deumil.${SUBCONF}.count.log
