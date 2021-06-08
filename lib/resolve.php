@@ -158,7 +158,7 @@ function retrieveWikidataId( $title, $wikiconfig, $wikidataconfig ){
 										$typeMatch = $searchResult["match"]["type"];
 										$langMatch = $searchResult["match"]["language"];
 
-										if ( $typeMatch === "label" && $langMatch === $lang ) {
+										if ( ( $typeMatch === "label" || $typeMatch === "alias" ) && $langMatch === $lang ) {
 											$wdid = $searchResult["id"];
 											
 											break;
